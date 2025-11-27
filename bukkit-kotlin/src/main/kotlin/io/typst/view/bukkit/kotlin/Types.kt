@@ -3,7 +3,7 @@ package io.typst.view.bukkit.kotlin
 import io.typst.view.ChestView
 import io.typst.view.ViewContents
 import io.typst.view.ViewControl
-import io.typst.view.action.ViewAction
+import io.typst.view.ViewAction
 import io.typst.view.page.PageContext
 import io.typst.view.page.PageViewLayout
 import org.bukkit.entity.Player

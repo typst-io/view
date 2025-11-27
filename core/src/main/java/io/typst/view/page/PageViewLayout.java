@@ -6,9 +6,7 @@ import io.typst.view.ChestView;
 import io.typst.view.CloseEvent;
 import io.typst.view.ViewContents;
 import io.typst.view.ViewControl;
-import io.typst.view.action.CloseAction;
-import io.typst.view.action.UpdateAction;
-import io.typst.view.action.ViewAction;
+import io.typst.view.ViewAction;
 import lombok.Data;
 import lombok.With;
 
@@ -41,7 +39,7 @@ public class PageViewLayout<I, P> {
                     itemOps.setAmount(item, Math.max(1, ctx.getPage()));
                     return item;
                 },
-                e -> new UpdateAction<I, P>(ctx.getLayout().toView(ctx.getPage() - 1).getContents())
+                e -> new ViewAction.Update<I, P>(ctx.getLayout().toView(ctx.getPage() - 1).getContents())
         ));
         controls.put(cSize + 5, ctx -> ViewControl.<I, P>of(
                 e -> {
@@ -49,9 +47,9 @@ public class PageViewLayout<I, P> {
                     itemOps.setAmount(item, Math.max(1, ctx.getPage()));
                     return item;
                 },
-                e -> new UpdateAction<I, P>(ctx.getLayout().toView(ctx.getPage() + 1).getContents())
+                e -> new ViewAction.Update<I, P>(ctx.getLayout().toView(ctx.getPage() + 1).getContents())
         ));
-        return of(title, row, elements, slots, controls, ptx -> e -> new CloseAction<>(true), itemOps);
+        return of(title, row, elements, slots, controls, ptx -> e -> new ViewAction.Close<>(true), itemOps);
     }
 
     public ChestView<I, P> toView(int page) {

@@ -4,7 +4,6 @@ import io.typst.inventory.ItemStackOps;
 import io.typst.inventory.bukkit.BukkitInventoryAdapter;
 import io.typst.inventory.bukkit.BukkitItemStackOps;
 import io.typst.view.*;
-import io.typst.view.action.*;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -222,7 +221,7 @@ public class BukkitView {
                 } catch (Exception ex) {
                     plugin.getLogger().log(Level.WARNING, ex, () -> "Error on inventory click!");
                     // To block after actions
-                    action = new CloseAction<>(true);
+                    action = new ViewAction.Close<>(true);
                 }
                 handleAction(p, holder, action);
             }
@@ -268,13 +267,13 @@ public class BukkitView {
                 return;
             }
             boolean giveBackInputItems = holder.isGiveBackItems();
-            ViewAction<ItemStack, Player> action = new NothingAction<>();
+            ViewAction<ItemStack, Player> action = ViewAction.nothing();
             try {
                 action = view.getOnClose().apply(new CloseEvent<>(p, view));
             } catch (Exception ex) {
                 plugin.getLogger().log(Level.WARNING, ex, () -> "Error on inventory close!");
             }
-            if (action instanceof CloseAction<ItemStack, Player> close) {
+            if (action instanceof ViewAction.Close<ItemStack, Player> close) {
                 giveBackInputItems = close.isGiveBackItems();
             } else {
                 handleAction(p, holder, action);
@@ -305,29 +304,29 @@ public class BukkitView {
             if (currentView == null) {
                 return;
             }
-            if (action instanceof OpenAction<?, ?> && !holder.isDirty()) {
-                OpenAction<ItemStack, Player> open = (OpenAction<ItemStack, Player>) action;
+            if (action instanceof ViewAction.Open<?, ?> && !holder.isDirty()) {
+                ViewAction.Open<ItemStack, Player> open = (ViewAction.Open<ItemStack, Player>) action;
                 holder.setDirty(true);
                 runSync(() -> openView(open.getView(), p, plugin));
-            } else if (action instanceof ReopenAction<ItemStack, Player>) {
+            } else if (action instanceof ViewAction.Open<ItemStack, Player>) {
                 runSync(() -> openView(currentView, p, plugin));
-            } else if (action instanceof CloseAction<ItemStack, Player>) {
-                holder.setGiveBackItems(((CloseAction<ItemStack, Player>) action).isGiveBackItems());
+            } else if (action instanceof ViewAction.Close<ItemStack, Player>) {
+                holder.setGiveBackItems(((ViewAction.Close<ItemStack, Player>) action).isGiveBackItems());
                 runSync(p::closeInventory);
-            } else if (action instanceof OpenAsyncAction<ItemStack, Player> openAsync) {
+            } else if (action instanceof ViewAction.OpenAsync<ItemStack, Player> openAsync) {
                 runAsync(() -> {
                     try {
                         ChestView<ItemStack, Player> chestView = openAsync.getFuture().get(30, TimeUnit.SECONDS);
-                        runSync(() -> handleAction(p, holder, new OpenAction<>(chestView)));
+                        runSync(() -> handleAction(p, holder, new ViewAction.Open<>(chestView)));
                     } catch (Exception ex) {
                         handleException(plugin.getLogger(), ex);
                     }
                 });
-            } else if (action instanceof UpdateAction<ItemStack, Player> update) {
+            } else if (action instanceof ViewAction.Update<ItemStack, Player> update) {
                 ChestView<ItemStack, Player> newView = currentView.withContents(update.getContents());
                 updateInventory(update.getContents(), holder.getInventory(), new OpenEvent<ItemStack, Player>(p, newView));
                 holder.setView(newView);
-            } else if (action instanceof UpdateAsyncAction<ItemStack, Player> updateAsync) {
+            } else if (action instanceof ViewAction.UpdateAsync<ItemStack, Player> updateAsync) {
                 runAsync(() -> {
                     try {
                         ViewContents<ItemStack, Player> contents = updateAsync.getContentsFuture().get(30, TimeUnit.SECONDS);

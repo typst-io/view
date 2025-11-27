@@ -1,11 +1,10 @@
 package io.typst.view.bukkit.plugin.view;
 
+import io.typst.inventory.bukkit.BukkitItem;
 import io.typst.view.ChestView;
+import io.typst.view.ViewAction;
 import io.typst.view.ViewContents;
 import io.typst.view.ViewControl;
-import io.typst.view.action.CloseAction;
-import io.typst.view.action.OpenAction;
-import io.typst.inventory.bukkit.BukkitItem;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -23,7 +22,7 @@ public class PlayerChestView {
                         .material(Material.IRON_CHESTPLATE)
                         .displayName(String.format("Show %s's equipments.", p.getName()))
                         .build().create(),
-                e -> new OpenAction<>(equip(p))
+                e -> new ViewAction.Open<>(equip(p))
         );
         controls.put(19, equip);
         return ChestView.<ItemStack, Player>builder()
@@ -41,7 +40,7 @@ public class PlayerChestView {
                         .material(Material.COMPASS)
                         .displayName("Go to previous")
                         .build().create(),
-                e -> new OpenAction<>(main(p))
+                e -> new ViewAction.Open<>(main(p))
         ));
         // refresh at 6 slot
         controls.put(6, ViewControl.<ItemStack, Player>of(
@@ -49,7 +48,7 @@ public class PlayerChestView {
                         .material(Material.CLOCK)
                         .displayName("Refresh")
                         .build().create(),
-                e -> new OpenAction<>(equip(p))
+                e -> new ViewAction.Open<>(equip(p))
         ));
         // equips
         int i = 0;
@@ -75,7 +74,7 @@ public class PlayerChestView {
                         .material(Material.BARRIER)
                         .displayName("§cEXIT")
                         .build().create(),
-                e -> new CloseAction<>(true)
+                e -> new ViewAction.Close<>(true)
         );
         controls.put(8, exit);
     }

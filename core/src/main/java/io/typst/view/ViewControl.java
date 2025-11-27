@@ -1,7 +1,5 @@
 package io.typst.view;
 
-import io.typst.view.action.NothingAction;
-import io.typst.view.action.ViewAction;
 import lombok.Data;
 import lombok.With;
 
@@ -15,13 +13,13 @@ public class ViewControl<I, P> {
     private final Function<ClickEvent<I, P>, ViewAction<I, P>> onClick;
 
     public static <I, P> ViewControl<I, P> just(I item) {
-        return of(item, ignore -> NothingAction.of());
+        return of(item, ignore -> ViewAction.nothing());
     }
 
     public static <I, P> ViewControl<I, P> consumer(I item, Consumer<ClickEvent<I, P>> onClick) {
         return of(item, e -> {
             onClick.accept(e);
-            return NothingAction.of();
+            return ViewAction.nothing();
         });
     }
 

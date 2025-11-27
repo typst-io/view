@@ -1,7 +1,7 @@
 package io.typst.view.bukkit.plugin.config;
 
 import io.typst.view.ChestView;
-import io.typst.view.action.NothingAction;
+import io.typst.view.ViewAction;
 import io.typst.view.ViewContents;
 import io.typst.view.ViewControl;
 import io.typst.view.bukkit.plugin.ViewPlugin;
@@ -62,7 +62,7 @@ public class ViewConfigCodec {
                             for (String cmd : cmds) {
                                 StringCommandExecutor.execute(ViewPlugin.inst, e.getPlayer(), cmd);
                             }
-                            return NothingAction.of();
+                            return ViewAction.nothing();
                         }
                 ));
             }
@@ -71,7 +71,7 @@ public class ViewConfigCodec {
                 .title(title)
                 .row(row)
                 .contents(ViewContents.of(controls, new HashMap<>()))
-                .onClose(e -> NothingAction.of())
+                .onClose(e -> ViewAction.nothing())
                 .onContentsUpdate(e -> {})
                 .build());
     }

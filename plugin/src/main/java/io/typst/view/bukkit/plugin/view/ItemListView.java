@@ -3,8 +3,7 @@ package io.typst.view.bukkit.plugin.view;
 import io.typst.view.ChestView;
 import io.typst.view.ClickEvent;
 import io.typst.view.ViewControl;
-import io.typst.view.action.NothingAction;
-import io.typst.view.action.ViewAction;
+import io.typst.view.ViewAction;
 import io.typst.view.page.PageContext;
 import io.typst.view.page.PageViewLayout;
 import io.typst.inventory.bukkit.BukkitItemStackOps;
@@ -53,6 +52,6 @@ public class ItemListView {
         if (clicker.isOp()) {
             clicker.getInventory().addItem(new ItemStack(material));
         }
-        return NothingAction.of();
+        return ViewAction.nothing();
     }
 }

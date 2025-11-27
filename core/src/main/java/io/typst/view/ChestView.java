@@ -1,7 +1,5 @@
 package io.typst.view;
 
-import io.typst.view.action.NothingAction;
-import io.typst.view.action.ViewAction;
 import io.typst.inventory.ItemStackOps;
 import lombok.Builder;
 import lombok.Value;
@@ -24,7 +22,7 @@ public class ChestView<I, P> {
     @Builder.Default
     ViewContents<I, P> contents = ViewContents.ofControls(Collections.emptyMap());
     @Builder.Default
-    Function<CloseEvent<I, P>, ViewAction<I, P>> onClose = e -> new NothingAction<>();
+    Function<CloseEvent<I, P>, ViewAction<I, P>> onClose = e -> ViewAction.nothing();
     @Builder.Default
     Consumer<UpdateEvent<I, P>> onContentsUpdate = e -> {
     };
