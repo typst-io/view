@@ -1,5 +1,7 @@
 package io.typst.view.page;
 
+import io.typst.inventory.ItemKey;
+import io.typst.inventory.ItemStackOps;
 import io.typst.view.ChestView;
 import io.typst.view.CloseEvent;
 import io.typst.view.ViewContents;
@@ -7,8 +9,6 @@ import io.typst.view.ViewControl;
 import io.typst.view.action.CloseAction;
 import io.typst.view.action.UpdateAction;
 import io.typst.view.action.ViewAction;
-import io.typst.inventory.ItemKey;
-import io.typst.inventory.ItemStackOps;
 import lombok.Data;
 import lombok.With;
 
@@ -29,6 +29,7 @@ public class PageViewLayout<I, P> {
     private final List<Integer> slots;
     private final Map<Integer, Function<PageContext<I, P>, ViewControl<I, P>>> controls;
     private final Function<PageContext<I, P>, Function<CloseEvent<I, P>, ViewAction<I, P>>> onClose;
+    private final ItemStackOps<I> itemOps;
 
     public static <I, P> PageViewLayout<I, P> ofDefault(ItemStackOps<I> itemOps, String title, int row, String buttonMaterial, List<Function<PageContext<I, P>, ViewControl<I, P>>> elements) {
         int cSize = (row - 1) * 9;
@@ -50,7 +51,7 @@ public class PageViewLayout<I, P> {
                 },
                 e -> new UpdateAction<I, P>(ctx.getLayout().toView(ctx.getPage() + 1).getContents())
         ));
-        return of(title, row, elements, slots, controls, ptx -> e -> new CloseAction<>(true));
+        return of(title, row, elements, slots, controls, ptx -> e -> new CloseAction<>(true), itemOps);
     }
 
     public ChestView<I, P> toView(int page) {
@@ -77,6 +78,7 @@ public class PageViewLayout<I, P> {
                 .row(row)
                 .contents(contents)
                 .onClose(onClose.apply(ctx))
+                .itemOps(itemOps)
                 .build();
     }
 
