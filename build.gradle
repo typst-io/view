@@ -22,7 +22,7 @@ tasks.register("publishCentralPortal") {
 
 allprojects {
     group = 'io.typst'
-    version = '9.0.0'
+    version = '10.0.0'
 
     def moduleName = name.substring(name.lastIndexOf('-') + 1)
     println(moduleName)
