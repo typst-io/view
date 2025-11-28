@@ -1,21 +1,10 @@
-buildscript {
-    repositories {
-        gradlePluginPortal()
-        mavenLocal()
-    }
-    dependencies {
-        classpath 'io.typst:spigradle:3.4.1'
-    }
-}
-
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'io.typst.spigradle' version '3.4.1'
 }
-
-pluginManager.apply('io.typst.spigradle')
 
 group = 'io.typst'
 

@@ -114,7 +114,7 @@ java -version
 
 ### Dependencies
 
-The project uses a custom Gradle plugin `io.typst:spigradle` for Spigot development:
+The module `view-plugin` uses a custom Gradle plugin `io.typst:spigradle` for Spigot development:
 - Automatically downloads Spigot APIs
 - Provides `debugSpigot` task for testing plugins
 - Uses `spigot('1.21.8')` dependency notation
@@ -122,7 +122,7 @@ The project uses a custom Gradle plugin `io.typst:spigradle` for Spigot developm
 Core dependencies:
 - Lombok 1.18.36 (compile-only, annotation processor)
 - JetBrains annotations 26.0.2-1
-- `io.typst:inventory-core:2.4.0` (abstraction for inventory operations)
+- `io.typst:inventory-core:2.7.2` (abstraction for inventory operations)
 - JUnit 5.8.1 (testing)
 
 ### Working with ViewAction

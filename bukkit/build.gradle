@@ -1,20 +1,9 @@
-buildscript {
-    repositories {
-        gradlePluginPortal()
-        mavenLocal()
-    }
-    dependencies {
-        classpath 'io.typst:spigradle:3.4.1'
-    }
-}
-
 plugins {
     id 'java-library'
     id 'maven-publish'
     id 'signing'
+    id 'io.typst.spigradle.base' version '3.4.1'
 }
-
-pluginManager.apply('io.typst.spigradle.base')
 
 group = 'io.typst'
 
@@ -26,7 +15,7 @@ repositories {
 dependencies {
     compileOnly spigot('1.21.8')
     api project(':view-core')
-    api 'io.typst:inventory-bukkit:2.3.0'
+    api 'io.typst:inventory-bukkit:2.7.2'
     compileOnly lombok('1.18.36')
     annotationProcessor lombok('1.18.36')
 }
