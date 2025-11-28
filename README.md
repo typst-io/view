@@ -1,6 +1,6 @@
 # bukkit-view
 
-![Maven Central Version](https://img.shields.io/maven-central/v/io.typst/bukkit-view-core)
+![Maven Central Version](https://img.shields.io/maven-central/v/io.typst/view-core)
 
 A [pure](https://en.wikipedia.org/wiki/Purely_functional_programming) library to express minecraft chest view.
 
@@ -8,9 +8,14 @@ There is no side effect except `BukkitView.class`, all functions just pure, ther
 
 Also, this library is a good showcase how to do declarative programming in Java.
 
-[Example is here!](https://github.com/typst-io/bukkit-view/blob/main/plugin/src/main/java/io/typst/bukkit/view/plugin/ViewPlugin.java)
+[Example is here!](https://github.com/typst-io/bukkit-view/blob/main/plugin/src/main/java/io/typst/view/bukkit/plugin/ViewPlugin.java)
 
 ## Import
+
+Modules:
+- view-core
+- view-bukkit
+- view-bukkit-kotlin
 
 ### Gradle
 
@@ -20,7 +25,11 @@ repositories {
 }
 
 dependencies {
-    implementation("io.typst:bukkit-view-core:8.1.0")
+    implementation("io.typst:view-core:${THE_LATEST}")
+    // for bukkit
+    // implementation('io.typst:view-bukkit:${THE_LATEST')
+    // for bukkit kotlin
+    // implementation('io.typst:view-bukkit-kotlin:${THE_LATEST}')
 }
 ```
 
@@ -30,8 +39,8 @@ dependencies {
 <dependencies>
     <dependency>
         <groupId>io.typst</groupId>
-        <artifactId>bukkit-view-core</artifactId>
-        <version>8.1.0</version>
+        <artifactId>view-core</artifactId>
+        <version>${THE_LATEST}</version>
     </dependency>
 </dependencies>
 ```
@@ -51,6 +60,8 @@ public class MyPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         BukkitView.register(this);
+        // To specify the custom ItemStackOps (e.g. isSimilar for ItemsAdder)
+        // BukkitView.register(new MyCustomStackOps(), this);
     }
 }
 ```
@@ -58,22 +69,22 @@ public class MyPlugin extends JavaPlugin {
 ## ChestView
 
 ```java
-ChestView subView = ...;
+ChestView<ItemStack, Player> subView = ...;
 
 String title = "title";
 int row = 1;
-Map<Integer, ViewControl> controls = new HashMap<>();
+Map<Integer, ViewControl<ItemStack, Player>> controls = new HashMap<>();
 
-controls.put(3, ViewControl.of(
+controls.put(3, ViewControl.<ItemStack, Player>of(
     new ItemStack(Material.DIAMOND),
     e -> {
         // this view item don't -- also shouldn't -- know how to open view,
         // just tell what view want to open.
-        return new ViewAction.Open(subView);
+        return new ViewAction.Open<>(subView);
     }
 ));
 
-ChestView view = ChestView.builder()
+ChestView<ItemStack, Player> view = ChestView.builder()
     .title(title)
     .row(row)
     .contents(ViewContents.ofControls(controls))
@@ -81,10 +92,10 @@ ChestView view = ChestView.builder()
 BukkitView.openView(view, player, plugin);
 ```
 
-To open asynchronously, `ViewAction.OpenAsync(Future<View>)`:
+To open asynchronously, `ViewAction.OpenAsync<I, P>(Future<ChestView<I, P>>)`:
 
 ```java
-ViewControl.of(
+ViewControl.<ItemStack, Player>of(
     bukkitItemStack,
     e -> {
         Future<ChestView> myChestViewFuture;
@@ -93,12 +104,12 @@ ViewControl.of(
 )
 ```
 
-To update just contents, `ViewAction.Update` also `ViewAction.UpdateAsync(Future<ViewContents>)`
+To update just contents, `ViewAction.Update` also `ViewAction.UpdateAsync(Future<ViewContents<ItemStack, Player>>)`
 
 ```java
-ViewControl.of(
+ViewControl.<ItemStack, Player>of(
     bukkitItemStack,
-    e -> new ViewAction.Update(newContents)
+    e -> new ViewAction.Update<>(newContents)
     // UpdateAsync if needed
 )
 ```
@@ -106,9 +117,14 @@ ViewControl.of(
 On close the view:
 
 ```java
-ChestView.of(title, row, map, closeEvent -> {
-    return ViewAction.NOTHING; // or ViewAction.REOPEN
-})
+ChestView.<ItemStack, Player>builder()
+    // ... extra configures
+    .onClose(e -> {
+        // true: give back the `items` not `controls`
+        // false: doesn't give back
+        return new ViewAction.Close<>(true);
+    })
+    .build();
 ```
 
 ## PageView
@@ -116,12 +132,15 @@ ChestView.of(title, row, map, closeEvent -> {
 Default construction `ofDefault()` for `PageViewLayout`:
 
 ```java
+import io.typst.inventory.bukkit.BukkitItemStackOps;
+
 // Lazy `Function<PageContext, ViewControl>` not just `ViewControl`
-List<Function<PageContext, ViewControl>> items = ...;
-PageViewLayout layout = PageViewLayout.ofDefault(
+List<Function<PageContext<ItemStack, Player>, ViewControl<ItemStack, Player>>> items = ...;
+PageViewLayout<ItemStack, Player> layout = PageViewLayout.ofDefault(
+    BukkitItemStackOps.INSTANCE,
     "title", 
     6, 
-    Material.STONE_BUTTON, 
+    Material.STONE_BUTTON.getKey().toString(),
     items
 );
 ```
@@ -129,22 +148,24 @@ PageViewLayout layout = PageViewLayout.ofDefault(
 Full construction for `PageViewLayout`:
 
 ```java
+import io.typst.inventory.bukkit.BukkitItemStackOps;
+
 // Paging elements
 List<Function<PageContext, ViewControl>> items = ...;
 // Paging elements will be put in this slots.
 List<Integer> slots = ...;
 // Control means fixed view-item, won't affected by view paging.
-Map<Integer, Function<PageContext, ViewControl>> controls = ...;
+Map<Integer, Function<PageContext<ItemStack, Player>, ViewControl<ItemStack, Player>>> controls = ...;
 String title = "title";
 int row = 6;
-PageViewLayout layout = PageViewLayout.of(title, row, items, slots, controls);
+PageViewLayout<ItemStack, Player> layout = PageViewLayout.of<ItemStack, Player>(title, row, items, slots, controls, BukkitItemStackOps.INSTANCE);
 ```
 
 Evaluate a single page from the layout and open:
 
 ```java
 int page = 1;
-ChestView view = layout.toView(page);
+ChestView<ItemStack, Player> view = layout.toView(page);
 BukkitView.openView(view, player, plugin);
 ```
 
@@ -154,12 +175,6 @@ Constructions:
 
 `ViewControl.of(ItemStack, Function<ClickEvent, ViewAction>)`
 
-> (ItemStack, ClickEvent -> ViewAction) -> ViewControl
-
 `ViewControl.just(ItemStack)`
 
-> ItemStack -> ViewControl
-
-`ViewControl.consumer(ItemStack, Consumer<ViewAction>)`
-
-> (ItemStack, ClickEvent -> Unit) -> ViewControl
+`ViewControl.consumer(ItemStack, Consumer<ClickEvent>)`

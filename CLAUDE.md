@@ -6,16 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 bukkit-view is a pure functional library for creating declarative Minecraft chest GUIs in Bukkit/Spigot plugins. The library emphasizes immutability and functional programming principles, making it thread-safe and easy to test. All functions are pure except for `BukkitView.class`.
 
-Published to Maven Central as `io.typst:bukkit-view-core`.
+Published to Maven Central as `io.typst:view-core`, `io.typst:view-bukkit`, and `io.typst:view-bukkit-kotlin`.
 
 ## Multi-Module Structure
 
 This is a Gradle multi-module project with the following modules:
 
-- **view-core**: Pure Java core library with no Bukkit dependencies. Contains the fundamental data structures (`ChestView`, `ViewControl`, `ViewAction`, `ViewContents`, `PageViewLayout`). This is the API that consumers interact with.
-- **view-bukkit**: Bukkit integration layer. Depends on `view-core` and `inventory-bukkit`. Contains `BukkitView` which handles actual inventory operations and event listening.
-- **view-bukkit-kotlin**: Kotlin extensions for the Bukkit module. Provides idiomatic Kotlin APIs.
-- **view-plugin**: Example Bukkit plugin demonstrating library usage. Uses the shadow plugin to package dependencies.
+- **core**: Pure Java core library with no Bukkit dependencies. Contains the fundamental data structures (`ChestView`, `ViewControl`, `ViewAction`, `ViewContents`, `PageViewLayout`). This is the API that consumers interact with.
+- **bukkit**: Bukkit integration layer. Depends on `core` and `inventory-bukkit`. Contains `BukkitView` which handles actual inventory operations and event listening.
+- **bukkit-kotlin**: Kotlin extensions for the Bukkit module. Provides idiomatic Kotlin APIs.
+- **plugin**: Example Bukkit plugin demonstrating library usage. Uses the shadow plugin to package dependencies.
 
 Module naming convention: root project is `view`, but modules are named `view-{module}` (e.g., `view-core`, `view-bukkit`).
 
@@ -36,11 +36,11 @@ Module naming convention: root project is `view`, but modules are named `view-{m
 # Create plugin JAR (with dependencies shaded)
 ./gradlew :view-plugin:shadowJar
 
-# Run debug server with plugin (from plugin module)
-./gradlew :view-plugin:debugViewPlugin
+# Run debug server with plugin
+./gradlew :view-plugin:debugSpigot
 
 # Clean debug server
-./gradlew :view-plugin:cleanDebugViewPlugin
+./gradlew :view-plugin:cleanDebugSpigot
 
 # Clean all builds
 ./gradlew clean
@@ -50,7 +50,7 @@ Module naming convention: root project is `view`, but modules are named `view-{m
 
 ### Pure Functional Core
 
-The `view-core` module is designed to be purely functional:
+The `core` module is designed to be purely functional:
 - All view data structures are immutable (using Lombok `@Value` and `@With`)
 - No side effects except in `BukkitView.class`
 - State changes return new instances via `with*()` methods
@@ -87,7 +87,7 @@ This allows the core to remain platform-agnostic. The `ItemStackOps<I>` interfac
 ### Event Flow
 
 1. **Open**: `BukkitView.openView()` creates inventory, sets holder, calls `OpenEvent` callbacks
-2. **Click**: `InventoryClickEvent` → validates against controls → calls `ViewControl.onClick()` → returns `ViewAction` → handled synchronously or asynchronously
+2. **Click**: `InventoryClickEvent` → validates against controls → calls `ViewControl.onClick()` → returns `ViewAction` → handled synchronously or asynchronously in `BukkitViewListener.handleAction()`
 3. **Update**: View contents can be updated via `ViewAction.Update` without closing/reopening
 4. **Close**: `InventoryCloseEvent` → calls `onClose()` → handles parent views (modal behavior) → optionally gives back items
 
@@ -95,6 +95,7 @@ This allows the core to remain platform-agnostic. The `ItemStackOps<I>` interfac
 
 `PageViewLayout` is a builder for paginated views:
 - Separates page logic from view rendering
+- `itemOps`: ItemStackOps instance for item operations
 - `elements`: List of lazy `Function<PageContext, ViewControl>` for paged items
 - `slots`: Which inventory slots should contain paged items
 - `controls`: Fixed controls (like page navigation buttons)
@@ -114,7 +115,7 @@ java -version
 
 ### Dependencies
 
-The module `view-plugin` uses a custom Gradle plugin `io.typst:spigradle` for Spigot development:
+The `plugin` module uses a custom Gradle plugin `io.typst:spigradle` for Spigot development:
 - Automatically downloads Spigot APIs
 - Provides `debugSpigot` task for testing plugins
 - Uses `spigot('1.21.8')` dependency notation
@@ -123,11 +124,12 @@ Core dependencies:
 - Lombok 1.18.36 (compile-only, annotation processor)
 - JetBrains annotations 26.0.2-1
 - `io.typst:inventory-core:2.7.2` (abstraction for inventory operations)
+- `io.typst:inventory-bukkit:2.7.2` (Bukkit-specific inventory implementation)
 - JUnit 5.8.1 (testing)
 
 ### Working with ViewAction
 
-After recent refactoring, `ViewAction` is now sealed. When adding new action types:
+`ViewAction` is sealed. When adding new action types:
 1. Add a new sealed implementation in `ViewAction.java`
 2. Update `BukkitViewListener.handleAction()` to handle the new type
 3. Ensure the action type uses `@Value` and `@With` for immutability
