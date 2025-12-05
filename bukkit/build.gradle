@@ -13,16 +13,18 @@ repositories {
 }
 
 dependencies {
-    compileOnly spigot('1.21.8')
+    // NOTE: downgraded to 1.20.1 for compatibility
+    compileOnly spigot('1.20.1')
     api project(':view-core')
     api 'io.typst:inventory-bukkit:2.7.2'
+    implementation 'org.jetbrains:annotations:26.0.2-1'
     compileOnly lombok('1.18.36')
     annotationProcessor lombok('1.18.36')
 }
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(17)
     }
     withSourcesJar()
     withJavadocJar()

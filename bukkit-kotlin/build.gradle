@@ -11,12 +11,12 @@ repositories {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(17)
 }
 
 dependencies {
     api(project(':view-bukkit'))
-    compileOnly(spigot('1.21.8'))
+    compileOnly(spigot('1.20.1'))
 }
 
 registerPublish(this)

@@ -115,9 +115,11 @@ public class BukkitView {
             Player p = (Player) e.getWhoClicked();
             ViewControl<ItemStack, Player> viewControl = view.getContents().getControls().get(e.getRawSlot());
             // Cancel if tried to move the control items
+
+
             switch (e.getClick()) {
-                case ClickType.LEFT:
-                case ClickType.RIGHT:
+                case LEFT:
+                case RIGHT:
                     if (viewControl != null) {
                         // don't cancel on pickup a slot that conflicts between items and controls
                         ItemStack cursor = e.getCursor();
@@ -130,7 +132,7 @@ public class BukkitView {
                         }
                     }
                     break;
-                case ClickType.SHIFT_LEFT:
+                case SHIFT_LEFT:
                     Inventory clickedInv = e.getClickedInventory();
                     if (clickedInv == null) {
                         break;
