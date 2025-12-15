@@ -44,7 +44,7 @@ public class ChestView<I, P> {
                 break;
             }
             I slotItem = getContents().getItems().get(slot);
-            if (itemOps.isEmpty(item)) {
+            if (itemOps.isEmpty(slotItem)) {
                 ret.add(slot);
                 amount -= itemOps.getMaxStackSize(item);
             } else if (itemOps.isSimilar(slotItem, item)) {

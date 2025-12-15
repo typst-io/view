@@ -1,0 +1,7 @@
+[versions]
+inventory="2.7.4"
+
+[libraries]
+inventory-core={module="io.typst:inventory-core", version.ref="inventory"}
+inventory-bukkit={module="io.typst:inventory-bukkit", version.ref="inventory"}
+inventory-bukkitKotlin={module="io.typst:inventory-bukkit-kotlin", version.ref="inventory"}

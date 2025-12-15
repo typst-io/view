@@ -31,9 +31,9 @@ public class ViewContents<I, P> {
             if (controls.containsKey(slot)) continue;
             I item = inv.get(slot);
             if (itemOps.isEmpty(item)) {
-                newItems.put(slot, item);
-            } else {
                 newItems.remove(slot);
+            } else {
+                newItems.put(slot, item);
             }
         }
         return withItems(newItems);

@@ -9,6 +9,7 @@ plugins {
 group = 'io.typst'
 
 repositories {
+    mavenLocal()
     mavenCentral()
     spigotmc()
     maven { url = 'https://repo.extendedclip.com/releases/' }
@@ -40,8 +41,8 @@ spigot {
         }
     }
     libraries = [
-            'io.typst:inventory-core:2.3.0',
-            'io.typst:inventory-bukkit:2.3.0',
+            libs.inventory.core.get().toString(),
+            libs.inventory.bukkit.get().toString(),
     ]
     apiVersion = '1.21'
     softDepends = ['PlaceholderAPI']
