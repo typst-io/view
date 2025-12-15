@@ -155,7 +155,7 @@ public class BukkitView {
                             return;
                         }
                         List<Integer> slots = overriddenSlots.stream()
-                                .flatMap(slot -> (slot.getWhitelist().isEmpty() || slot.getWhitelist().contains(item.getType()))
+                                .flatMap(slot -> (slot.getWhitelist().isEmpty() || slot.getWhitelist().contains(item.getType().getKey().toString()))
                                         ? Stream.of(slot.getSlot())
                                         : Stream.empty())
                                 .toList();
