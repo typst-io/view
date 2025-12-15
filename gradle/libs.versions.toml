@@ -1,5 +1,5 @@
 [versions]
-inventory="2.7.4"
+inventory="2.7.5"
 
 [libraries]
 inventory-core={module="io.typst:inventory-core", version.ref="inventory"}
