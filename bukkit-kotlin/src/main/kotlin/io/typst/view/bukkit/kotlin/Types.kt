@@ -1,6 +1,10 @@
 package io.typst.view.bukkit.kotlin
 
 import io.typst.view.ChestView
+import io.typst.view.ClickEvent
+import io.typst.view.CloseEvent
+import io.typst.view.OpenEvent
+import io.typst.view.UpdateEvent
 import io.typst.view.ViewContents
 import io.typst.view.ViewControl
 import io.typst.view.ViewAction
@@ -20,3 +24,11 @@ typealias BukkitPageViewLayout = PageViewLayout<ItemStack, Player>
 typealias BukkitChestView = ChestView<ItemStack, Player>
 
 typealias BukkitViewContents = ViewContents<ItemStack, Player>
+
+typealias BukkitClickEvent = ClickEvent<ItemStack, Player>
+
+typealias BukkitCloseEvent = CloseEvent<ItemStack, Player>
+
+typealias BukkitOpenEvent = OpenEvent<ItemStack, Player>
+
+typealias BukkitUpdateEvent = UpdateEvent<ItemStack, Player>

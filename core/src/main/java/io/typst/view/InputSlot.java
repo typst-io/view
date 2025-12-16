@@ -9,5 +9,10 @@ import java.util.Set;
 @With
 public class InputSlot {
     int slot;
+    /**
+     * Minecraft: NamespacedKey#toString from Material
+     *
+     * Empty means no item whitelist for the slot
+     */
     Set<String> whitelist;
 }
