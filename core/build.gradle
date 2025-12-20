@@ -2,7 +2,6 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'signing'
-    alias(spigots.plugins.spigot)
     id 'io.typst.spigradle.base' version '3.4.1'
 }
 
