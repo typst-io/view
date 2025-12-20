@@ -1,3 +1,30 @@
+pluginManagement {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    versionCatalogs {
+        // apply the version catalog to use the new dependency shortcut
+        create("spigots") {
+            from("io.typst:spigot-catalog:1.0.0")
+            // if you need to override the version:
+            // version("spigot", "1.21.10-R0.1-SNAPSHOT")
+        }
+        create("commons") {
+            from("io.typst:common-catalog:1.0.0")
+        }
+    }
+}
+
 rootProject.name = 'view'
 
 include('core', 'plugin', 'bukkit', 'bukkit-kotlin')

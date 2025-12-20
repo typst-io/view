@@ -17,6 +17,7 @@ kotlin {
 
 dependencies {
     api(project(':view-bukkit'))
+    compileOnly('org.jetbrains.kotlin:kotlin-stdlib:2.2.21')
     compileOnly(spigot('1.20.1'))
 }
 
