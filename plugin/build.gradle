@@ -21,7 +21,7 @@ repositories {
 dependencies {
     shadow project(':view-bukkit')
     compileOnly spigots.paper.api
-    compileOnly spigots.placeholderApi
+    compileOnly spigots.placeholderapi
     compileOnly commons.lombok
     annotationProcessor commons.lombok
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
