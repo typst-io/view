@@ -2,13 +2,16 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '2.2.21'
     id 'maven-publish'
     id 'signing'
-    id 'io.typst.spigradle.base' version '3.4.1'
+    id 'io.typst.spigradle.spigot-base' version '4.0.2'
 }
 
 repositories {
     mavenLocal()
     mavenCentral()
-    spigotmc()
+    spigotRepos {
+        spigotmc()
+        papermc()
+    }
 }
 
 kotlin {
@@ -18,7 +21,7 @@ kotlin {
 dependencies {
     api(project(':view-bukkit'))
     implementation('org.jetbrains.kotlin:kotlin-stdlib:2.2.21')
-    compileOnly(spigot('1.20.1'))
+    compileOnly(spigots.paper.api)
 }
 
 registerPublish(this)

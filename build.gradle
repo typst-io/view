@@ -1,5 +1,6 @@
 plugins {
-    id 'base'
+    id 'java'
+    alias(commons.plugins.ideaExt)
 }
 
 group = 'io.typst'

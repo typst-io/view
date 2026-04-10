@@ -2,7 +2,7 @@ plugins {
     id 'java-library'
     id 'maven-publish'
     id 'signing'
-    id 'io.typst.spigradle.base' version '3.4.1'
+    id 'io.typst.spigradle.spigot-base' version '4.0.2'
 }
 
 group = 'io.typst'
@@ -10,12 +10,15 @@ group = 'io.typst'
 repositories {
     mavenLocal()
     mavenCentral()
-    spigotmc()
+    spigotRepos {
+        spigotmc()
+        papermc()
+    }
 }
 
 dependencies {
-    compileOnly lombok('1.18.36')
-    annotationProcessor lombok('1.18.36')
+    compileOnly commons.lombok
+    annotationProcessor commons.lombok
     implementation 'org.jetbrains:annotations:26.0.2-1'
     api libs.inventory.core
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
