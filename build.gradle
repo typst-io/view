@@ -23,7 +23,16 @@ tasks.register("publishCentralPortal") {
 
 allprojects {
     group = 'io.typst'
-    version = '10.1.3'
+    version = '11.0.0'
+
+    pluginManager.withPlugin("java") {
+        def java = extensions["java"] as JavaPluginExtension
+        java.toolchain {
+            languageVersion.set(JavaLanguageVersion.of(property("java.version").toString().toInteger()))
+        }
+        java.withSourcesJar()
+        java.withJavadocJar()
+    }
 
     def moduleName = name.substring(name.lastIndexOf('-') + 1)
     println(moduleName)

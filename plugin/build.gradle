@@ -2,7 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'com.gradleup.shadow' version '9.4.1'
     alias(spigots.plugins.spigot)
 }
 
@@ -47,13 +47,13 @@ spigot {
             libs.inventory.core.get().toString(),
             libs.inventory.bukkit.get().toString(),
     ]
-    apiVersion = '1.20'
+    apiVersion = '1.21'
     softDepend = ['PlaceholderAPI']
 }
 
 debugSpigot {
     eula.set(true)
-    version.set('1.20.1')
+    version.set('1.21.11')
     jarFile.set(tasks.shadowJar.archiveFile)
 }
 
@@ -62,13 +62,7 @@ tasks.named('shadowJar', ShadowJar) {
 }
 
 tasks.named('assemble') {
-    dependsOn(shadowJar)
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
+    dependsOn(tasks.named('shadowJar'))
 }
 
 test {

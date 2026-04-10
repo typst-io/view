@@ -1,6 +1,7 @@
 package io.typst.view.bukkit.plugin.view;
 
 import io.typst.inventory.bukkit.BukkitItem;
+import io.typst.inventory.bukkit.BukkitItemStackOps;
 import io.typst.view.ChestView;
 import io.typst.view.ViewAction;
 import io.typst.view.ViewContents;
@@ -25,7 +26,7 @@ public class PlayerChestView {
                 e -> new ViewAction.Open<>(equip(p))
         );
         controls.put(19, equip);
-        return ChestView.<ItemStack, Player>builder()
+        return ChestView.<ItemStack, Player>builder(BukkitItemStackOps.INSTANCE)
                 .title("Chest")
                 .contents(ViewContents.ofControls(controls))
                 .build();
@@ -56,7 +57,7 @@ public class PlayerChestView {
             controls.put(9 + i, ViewControl.just(item));
             i++;
         }
-        return ChestView.<ItemStack, Player>builder()
+        return ChestView.<ItemStack, Player>builder(BukkitItemStackOps.INSTANCE)
                 .title("Equip")
                 .contents(ViewContents.ofControls(controls))
                 .build();

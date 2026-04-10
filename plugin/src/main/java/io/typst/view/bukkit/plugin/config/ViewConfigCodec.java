@@ -69,7 +69,7 @@ public class ViewConfigCodec {
                 ));
             }
         }
-        return Optional.of(ChestView.<ItemStack, Player>builder()
+        return Optional.of(ChestView.<ItemStack, Player>builder(BukkitItemStackOps.INSTANCE)
                 .title(title)
                 .row(row)
                 .contents(ViewContents.of(controls, new HashMap<>()))

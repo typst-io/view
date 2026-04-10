@@ -1,6 +1,7 @@
 package io.typst.view;
 
 import io.typst.inventory.ItemStackOps;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
@@ -11,9 +12,10 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-@Value(staticConstructor = "of")
+@Value
 @With
-@Builder
+@AllArgsConstructor(staticName = "of")
+@Builder(builderMethodName = "internalBuilder")
 public class ChestView<I, P> {
     @Builder.Default
     String title = "";
@@ -31,6 +33,15 @@ public class ChestView<I, P> {
     @Builder.Default
     ChestView<I, P> parent = null;
     ItemStackOps<I> itemOps;
+
+    public static <I, P> ChestViewBuilder<I, P> builder(ItemStackOps<I> itemOps) {
+        return ChestView.<I, P>internalBuilder()
+                .itemOps(itemOps);
+    }
+
+    // Javadoc cannot resolve Lombok-generated builder classes.
+    public static class ChestViewBuilder<I, P> {
+    }
 
     public List<Integer> findSpaces(List<Integer> slots, I item) {
         List<Integer> ret = new ArrayList<>();

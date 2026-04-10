@@ -7,5 +7,4 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
 fun chestViewBuilder(itemOps: ItemStackOps<ItemStack> = BukkitItemStackOps.INSTANCE): ChestView.ChestViewBuilder<ItemStack, Player> =
-    ChestView.builder<ItemStack, Player>()
-        .itemOps(itemOps)
+    ChestView.builder(itemOps)
