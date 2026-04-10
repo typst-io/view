@@ -1,12 +1,12 @@
 package io.typst.view.bukkit.plugin.view;
 
+import io.typst.inventory.bukkit.BukkitItemStackOps;
 import io.typst.view.ChestView;
 import io.typst.view.ClickEvent;
-import io.typst.view.ViewControl;
 import io.typst.view.ViewAction;
+import io.typst.view.ViewControl;
 import io.typst.view.page.PageContext;
 import io.typst.view.page.PageViewLayout;
-import io.typst.inventory.bukkit.BukkitItemStackOps;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -38,7 +38,7 @@ public class ItemListView {
                 BukkitItemStackOps.INSTANCE,
                 "page",
                 6,
-                Material.STONE_BUTTON.getKeyOrThrow().toString(),
+                Material.STONE_BUTTON.getKey().toString(),
                 pagingContents
         );
     }
