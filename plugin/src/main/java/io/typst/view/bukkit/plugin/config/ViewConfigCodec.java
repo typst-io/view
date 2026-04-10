@@ -1,5 +1,6 @@
 package io.typst.view.bukkit.plugin.config;
 
+import io.typst.inventory.bukkit.BukkitItemStackOps;
 import io.typst.view.ChestView;
 import io.typst.view.ViewAction;
 import io.typst.view.ViewContents;
@@ -32,7 +33,8 @@ public class ViewConfigCodec {
                 plugin.getLogger().warning("Error while reading the view: " + viewName);
                 continue;
             }
-            ret.put(viewName, view);
+            ret.put(viewName, view
+                    .withItemOps(BukkitItemStackOps.INSTANCE));
         }
         return ret;
     }
@@ -72,7 +74,8 @@ public class ViewConfigCodec {
                 .row(row)
                 .contents(ViewContents.of(controls, new HashMap<>()))
                 .onClose(e -> ViewAction.nothing())
-                .onContentsUpdate(e -> {})
+                .onContentsUpdate(e -> {
+                })
                 .build());
     }
 

@@ -78,14 +78,15 @@ public class ViewPlugin extends JavaPlugin {
                     ChestView<ItemStack, Player> view = ItemListView.create(
                             Arrays.stream(Material.values())
                                     .filter(mat -> mat.isItem() && !mat.isAir())
-                    );
+                    ).withItemOps(BukkitItemStackOps.INSTANCE);
                     BukkitView.openView(view, p, this);
                 }
                 break;
             }
             case "chest": {
                 if (p != null && p.isOp()) {
-                ChestView<ItemStack, Player> view = PlayerChestView.main(p);
+                    ChestView<ItemStack, Player> view = PlayerChestView.main(p)
+                            .withItemOps(BukkitItemStackOps.INSTANCE);
                     BukkitView.openView(view, p, this);
                 }
                 break;
