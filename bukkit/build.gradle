@@ -26,12 +26,4 @@ dependencies {
     annotationProcessor commons.lombok
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-    withSourcesJar()
-    withJavadocJar()
-}
-
 registerPublish(this)

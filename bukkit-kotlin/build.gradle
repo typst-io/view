@@ -14,10 +14,6 @@ repositories {
     }
 }
 
-kotlin {
-    jvmToolchain(17)
-}
-
 dependencies {
     api(project(':view-bukkit'))
     implementation('org.jetbrains.kotlin:kotlin-stdlib:2.2.21')

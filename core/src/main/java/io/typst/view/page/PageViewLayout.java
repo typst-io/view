@@ -71,12 +71,11 @@ public class PageViewLayout<I, P> {
             viewControls.put(pair.getKey(), control);
         }
         ViewContents<I, P> contents = ViewContents.ofControls(viewControls);
-        return ChestView.<I, P>builder()
+        return ChestView.<I, P>builder(itemOps)
                 .title(title)
                 .row(row)
                 .contents(contents)
                 .onClose(onClose.apply(ctx))
-                .itemOps(itemOps)
                 .build();
     }
 
