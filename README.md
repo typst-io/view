@@ -192,10 +192,16 @@ actions, item metadata, and the Kotlin builder's Java interoperability. Bukkit t
 MockBukkit with the same Paper API version as the library, without starting a Minecraft server.
 
 Tests tagged `regression` assert the intended behavior and remain enabled in the default test
-tasks. They currently expose existing library bugs: stale item refunds on close, item loss on
-disconnect or update, stale asynchronous opens, unhandled `Reopen` actions, mutation of enchantment
-maps, and division by zero in layouts without content slots. The test command will fail until
-those bugs are fixed; the tests do not treat buggy behavior as a successful result.
+tasks. They guard against duplicate item refunds, item loss on disconnect or update, stale
+asynchronous results, incorrect `Reopen` actions, mutation of enchantment maps, and layouts without
+content slots.
+
+In-place updates preserve editable items in untouched slots and return displaced items to the
+player. Closing callbacks receive a fresh input snapshot, and refunds happen before disconnect.
+Reopening an active view transfers its inputs into the new inventory; a `Reopen` requested by a
+closing callback does not insert inputs that have already been returned. Refunds that do not fit
+in the player's inventory are dropped into the world. Default page layouts require at least two
+rows, so that one row remains available for content.
 
 To run one reproduction:
 

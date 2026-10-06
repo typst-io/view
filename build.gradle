@@ -23,7 +23,7 @@ tasks.register("publishCentralPortal") {
 
 allprojects {
     group = 'io.typst'
-    version = '11.0.0'
+    version = '11.0.1'
 
     pluginManager.withPlugin("java") {
         def java = extensions["java"] as JavaPluginExtension

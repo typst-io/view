@@ -349,7 +349,8 @@ class BukkitViewTest {
 
         assertTrue(BukkitView.updateView(updated, player));
 
-        assertEquals(8, assertNotNull(inventory.getItem(0)).getAmount());
+        assertNotNull(inventory.getItem(0));
+        assertEquals(8, inventory.getItem(0).getAmount());
         assertEquals(0, inventoryAmount(Material.DIAMOND));
         player.closeInventory();
         server.getScheduler().performOneTick();
@@ -466,8 +467,8 @@ class BukkitViewTest {
             server.getScheduler().waitAsyncTasksFinished();
             server.getScheduler().performTicks(2);
 
-            assertEquals(Material.BARRIER,
-                    assertNotNull(player.getOpenInventory().getTopInventory().getItem(1)).getType());
+            assertNotNull(player.getOpenInventory().getTopInventory().getItem(1));
+            assertEquals(Material.BARRIER, player.getOpenInventory().getTopInventory().getItem(1).getType());
             assertFalse(holder().getView().getContents().getControls().containsKey(2));
         } finally {
             future.cancel(true);
@@ -528,7 +529,8 @@ class BukkitViewTest {
 
     @Test
     void returnsItemsToTheWorldWhenThePlayerInventoryHasNoSpace() {
-        for (int slot = 0; slot < player.getInventory().getStorageContents().length; slot++) {
+        // MockBukkit's addItem scans equipment slots too, so fill them to model full storage.
+        for (int slot = 0; slot < player.getInventory().getSize(); slot++) {
             player.getInventory().setItem(slot, new ItemStack(Material.STONE, 64));
         }
         open(ViewContents.of(Map.of(8, ViewControl.just(new ItemStack(Material.BARRIER))),
@@ -572,7 +574,8 @@ class BukkitViewTest {
         inventory.setItem(0, null);
         server.getScheduler().performOneTick();
 
-        assertEquals(Material.BARRIER, assertNotNull(inventory.getItem(0)).getType());
+        assertNotNull(inventory.getItem(0));
+        assertEquals(Material.BARRIER, inventory.getItem(0).getType());
         player.closeInventory();
         server.getScheduler().performOneTick();
         assertEquals(8, inventoryAmount(Material.DIAMOND));

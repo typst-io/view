@@ -38,7 +38,9 @@ public class ViewHolder implements InventoryHolder {
         if (view == null || closed) {
             return;
         }
-        this.view = view.withContents(view.getContents().updated(itemOps, new BukkitInventoryAdapter(inv, itemOps.empty())));
+        // A snapshot is part of the same view revision, including while an async action is pending.
+        this.view = view.withContents(view.getContents().updated(
+                itemOps, new BukkitInventoryAdapter(inv, itemOps.empty())));
     }
 
     void updateViewContentsWithPlayer(Player player) {

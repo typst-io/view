@@ -374,7 +374,13 @@ public class BukkitView {
                         holder.setTransferringItems(!closing);
                         try {
                             holder.updateViewContents();
-                            openView(holder.getView(), p, plugin);
+                            ChestView<ItemStack, Player> reopened = holder.getView();
+                            if (closing) {
+                                // Closing already returned the inputs; do not insert those stacks again.
+                                reopened = reopened.withContents(
+                                        reopened.getContents().withItems(Collections.emptyMap()));
+                            }
+                            openView(reopened, p, plugin);
                         } finally {
                             holder.setTransferringItems(false);
                         }
