@@ -40,7 +40,13 @@ public class ViewConfigCodec {
     }
 
     public static Optional<ChestView<ItemStack, Player>> loadViewConfig(ConfigurationSection section) {
+        if (section == null) {
+            return Optional.empty();
+        }
         int row = section.getInt("row", 1);
+        if (row < 1 || row > 6) {
+            return Optional.empty();
+        }
         String title = section.getString("title", "");
         Map<Integer, ViewControl<ItemStack, Player>> controls = new HashMap<>();
         ConfigurationSection contents = section.getConfigurationSection("contents");
@@ -54,7 +60,7 @@ public class ViewConfigCodec {
             if (item == null) {
                 continue;
             }
-            if (slot >= 0) {
+            if (slot >= 0 && slot < row * 9) {
                 controls.put(slot, ViewControl.<ItemStack, Player>of(
                         e -> ViewPlugin.inst.replacePlaceholder(e.getPlayer(), item.clone()),
                         e -> {

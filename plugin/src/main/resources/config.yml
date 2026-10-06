@@ -3,7 +3,7 @@ warp:
   contents:
     4:
       item:
-        type: STEAK
+        type: COOKED_BEEF
         name: '순한맛 야생서버'
         lore:
           - '동접: %players-soft%/%max-players-soft%'

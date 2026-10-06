@@ -18,6 +18,9 @@ public class ViewHolder implements InventoryHolder {
     private Inventory inventory = null;
     private boolean giveBackItems = true;
     private boolean dirty = false;
+    private boolean closed = false;
+    private long revision = 0;
+    private boolean transferringItems = false;
 
     public ViewHolder(Plugin plugin, ItemStackOps<ItemStack> itemOps) {
         this.plugin = plugin;
@@ -32,16 +35,16 @@ public class ViewHolder implements InventoryHolder {
     void updateViewContents() {
         ChestView<ItemStack, Player> view = getView();
         Inventory inv = getInventory();
-        if (view == null) {
+        if (view == null || closed) {
             return;
         }
-        setView(view.withContents(view.getContents().updated(itemOps, new BukkitInventoryAdapter(inv, itemOps.empty()))));
+        this.view = view.withContents(view.getContents().updated(itemOps, new BukkitInventoryAdapter(inv, itemOps.empty())));
     }
 
     void updateViewContentsWithPlayer(Player player) {
         updateViewContents();
         ChestView<ItemStack, Player> view = getView();
-        if (view != null) {
+        if (view != null && !closed) {
             view.getOnContentsUpdate().accept(new UpdateEvent<>(player, view.getContents().getItems()));
         }
     }
@@ -62,6 +65,27 @@ public class ViewHolder implements InventoryHolder {
 
     public void setView(ChestView<ItemStack, Player> view) {
         this.view = view;
+        revision++;
+    }
+
+    boolean isClosed() {
+        return closed;
+    }
+
+    void markClosed() {
+        closed = true;
+    }
+
+    long getRevision() {
+        return revision;
+    }
+
+    boolean isTransferringItems() {
+        return transferringItems;
+    }
+
+    void setTransferringItems(boolean transferringItems) {
+        this.transferringItems = transferringItems;
     }
 
     public Plugin getPlugin() {

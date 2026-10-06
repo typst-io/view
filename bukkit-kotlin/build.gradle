@@ -18,6 +18,15 @@ dependencies {
     api(project(':view-bukkit'))
     implementation('org.jetbrains.kotlin:kotlin-stdlib:2.2.21')
     compileOnly(spigots.paper.api)
+    testImplementation(platform(libs.junit.bom))
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.mockbukkit)
+    testImplementation(spigots.paper.api)
+    testRuntimeOnly(libs.junit.platformLauncher)
+}
+
+test {
+    useJUnitPlatform()
 }
 
 registerPublish(this)

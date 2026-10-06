@@ -38,7 +38,7 @@ public class BukkitItem {
     }
 
     public BukkitItem withEnchant(Enchantment enchant, int level) {
-        Map<Enchantment, Integer> enchants = this.enchants.isEmpty() ? new HashMap<>() : this.enchants;
+        Map<Enchantment, Integer> enchants = new HashMap<>(this.enchants);
         enchants.put(enchant, level);
         return withEnchants(enchants);
     }

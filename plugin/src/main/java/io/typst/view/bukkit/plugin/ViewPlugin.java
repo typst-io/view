@@ -92,11 +92,12 @@ public class ViewPlugin extends JavaPlugin {
                 break;
             }
             case "reload": {
-                if (p.isOp()) {
+                if (sender.isOp()) {
                     reloadConfig();
                     views = ViewConfigCodec.loadViewConfigs(this, getConfig());
                     sender.sendMessage("Reloaded.");
                 }
+                break;
             }
             case "open": {
                 String name = args.length >= 2 ? args[1] : "";

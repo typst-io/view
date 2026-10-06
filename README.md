@@ -178,3 +178,29 @@ Constructions:
 `ViewControl.just(ItemStack)`
 
 `ViewControl.consumer(ItemStack, Consumer<ClickEvent>)`
+
+## Tests
+
+Use JDK 21 and the Gradle wrapper to run the library tests without the example plugin:
+
+```shell
+./gradlew :view-core:test :view-bukkit:test :view-bukkit-kotlin:test --continue
+```
+
+The tests cover core item snapshots and pagination, Bukkit inventory events and scheduled
+actions, item metadata, and the Kotlin builder's Java interoperability. Bukkit tests use
+MockBukkit with the same Paper API version as the library, without starting a Minecraft server.
+
+Tests tagged `regression` assert the intended behavior and remain enabled in the default test
+tasks. They currently expose existing library bugs: stale item refunds on close, item loss on
+disconnect or update, stale asynchronous opens, unhandled `Reopen` actions, mutation of enchantment
+maps, and division by zero in layouts without content slots. The test command will fail until
+those bugs are fixed; the tests do not treat buggy behavior as a successful result.
+
+To run one reproduction:
+
+```shell
+./gradlew :view-bukkit:test --tests '*BukkitViewTest.returnsAnItemDepositedImmediatelyBeforeClosing'
+```
+
+Each module writes its HTML test report to `build/reports/tests/test/index.html`.

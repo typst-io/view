@@ -15,6 +15,7 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -51,26 +52,76 @@ public class BukkitView {
      */
     public static boolean updateView(ChestView<ItemStack, Player> newView, Player player) {
         Inventory topInv = player.getOpenInventory().getTopInventory();
+        if (topInv == null) {
+            return false;
+        }
         InventoryHolder holder = topInv.getHolder();
         String title = player.getOpenInventory().getTitle();
         int size = topInv.getSize();
         if (holder instanceof ViewHolder && title.equals(newView.getTitle()) && size == (newView.getRow() * 9)) {
-            ViewHolder viewHolder = (ViewHolder) holder;
-            // update contents
-            viewHolder.setView(newView);
-            updateInventory(newView.getContents(), topInv, new OpenEvent<ItemStack, Player>(player, newView));
-            return true;
+            return applyUpdate(newView, player, (ViewHolder) holder);
         }
         return false;
     }
 
     private static void updateInventory(ViewContents<ItemStack, Player> contents, Inventory inv, OpenEvent<ItemStack, Player> event) {
-        inv.clear();
+        ItemStack[] items = new ItemStack[inv.getSize()];
         for (Map.Entry<Integer, ViewControl<ItemStack, Player>> pair : contents.getControls().entrySet()) {
-            inv.setItem(pair.getKey(), pair.getValue().getItem().apply(event));
+            ItemStack item = pair.getValue().getItem().apply(event);
+            items[pair.getKey()] = item == null ? null : item.clone();
         }
         for (Map.Entry<Integer, ItemStack> pair : contents.getItems().entrySet()) {
-            inv.setItem(pair.getKey(), pair.getValue());
+            ItemStack item = pair.getValue();
+            items[pair.getKey()] = item == null ? null : item.clone();
+        }
+        inv.setContents(items);
+    }
+
+    private static boolean applyUpdate(ChestView<ItemStack, Player> newView, Player player, ViewHolder holder) {
+        if (holder.isClosed() || player.getOpenInventory().getTopInventory() != holder.getInventory()) {
+            return false;
+        }
+        ChestView<ItemStack, Player> currentView = holder.getView();
+        if (currentView == null) {
+            return false;
+        }
+        Inventory inventory = holder.getInventory();
+        ViewContents<ItemStack, Player> currentContents = currentView.getContents().updated(
+                currentView.getItemOps(), new BukkitInventoryAdapter(inventory, currentView.getItemOps().empty()));
+        Map<Integer, ItemStack> items = new HashMap<>(newView.getContents().getItems());
+        List<ItemStack> displaced = new ArrayList<>();
+        for (Map.Entry<Integer, ItemStack> entry : currentContents.getItems().entrySet()) {
+            int slot = entry.getKey();
+            if (items.containsKey(slot)) {
+                if (!entry.getValue().equals(items.get(slot))) {
+                    displaced.add(entry.getValue());
+                }
+            } else if (newView.getContents().getControls().containsKey(slot)) {
+                displaced.add(entry.getValue());
+            } else {
+                items.put(slot, entry.getValue());
+            }
+        }
+        ChestView<ItemStack, Player> updated = newView.withContents(newView.getContents().withItems(items));
+        updateInventory(updated.getContents(), inventory, new OpenEvent<>(player, updated));
+        holder.setView(updated);
+        giveBackItems(displaced, player);
+        return true;
+    }
+
+    private static void giveBackItems(Iterable<ItemStack> contents, Player player) {
+        List<ItemStack> items = new ArrayList<>();
+        for (ItemStack item : contents) {
+            if (item != null && !item.getType().isAir() && item.getAmount() > 0) {
+                items.add(item.clone());
+            }
+        }
+        if (items.isEmpty()) {
+            return;
+        }
+        HashMap<Integer, ItemStack> failures = player.getInventory().addItem(items.toArray(ItemStack[]::new));
+        for (ItemStack item : failures.values()) {
+            player.getWorld().dropItem(player.getEyeLocation(), item);
         }
     }
 
@@ -103,7 +154,7 @@ public class BukkitView {
             Inventory topInv = e.getView().getTopInventory();
             Inventory bottomInv = e.getView().getBottomInventory();
             ViewHolder holder = topInv.getHolder() instanceof ViewHolder ? ((ViewHolder) topInv.getHolder()) : null;
-            if (holder == null || !holder.getPlugin().getName().equals(plugin.getName())) {
+            if (holder == null || holder.isClosed() || !holder.getPlugin().getName().equals(plugin.getName())) {
                 return;
             }
             ChestView<ItemStack, Player> view = holder.getView();
@@ -125,8 +176,11 @@ public class BukkitView {
                         ItemStack cursor = e.getCursor();
                         if ((cursor == null || cursor.getType() == Material.AIR) && view.getContents().getItems().containsKey(e.getRawSlot())) {
                             // set control item
-                            view.getContents().getItems().remove(e.getRawSlot());
-                            runSync(() -> topInv.setItem(e.getRawSlot(), viewControl.getItem(new OpenEvent(p, view))));
+                            Map<Integer, ItemStack> items = new HashMap<>(view.getContents().getItems());
+                            items.remove(e.getRawSlot());
+                            holder.setView(view.withContents(view.getContents().withItems(items)));
+                            runForView(p, holder, holder.getRevision(), false,
+                                    () -> topInv.setItem(e.getRawSlot(), viewControl.getItem(new OpenEvent<>(p, view))));
                         } else {
                             e.setCancelled(true);
                         }
@@ -167,7 +221,7 @@ public class BukkitView {
                         // only if the default target slot and the overwritten slot is different
                         if (!targetEmptySlots.isEmpty() && !targetEmptySlots.equals(Collections.singletonList(targetSlot))) {
                             e.setCancelled(true);
-                            runSync(() -> {
+                            runForView(p, holder, holder.getRevision(), false, () -> {
                                 InventoryHolder theHolder = targetInventory.getHolder();
                                 ViewHolder viewHolder = theHolder instanceof ViewHolder ? ((ViewHolder) theHolder) : null;
                                 ChestView theView = viewHolder != null ? viewHolder.getView() : null;
@@ -228,14 +282,14 @@ public class BukkitView {
                 handleAction(p, holder, action);
             }
             // update user input items
-            runSync(() -> holder.updateViewContentsWithPlayer(p));
+            runForView(p, holder, holder.getRevision(), false, () -> holder.updateViewContentsWithPlayer(p));
         }
 
         @EventHandler
         public void onDrag(InventoryDragEvent e) {
             Inventory topInv = e.getView().getTopInventory();
             ViewHolder holder = topInv.getHolder() instanceof ViewHolder ? ((ViewHolder) topInv.getHolder()) : null;
-            if (holder == null || !holder.getPlugin().getName().equals(plugin.getName())) {
+            if (holder == null || holder.isClosed() || !holder.getPlugin().getName().equals(plugin.getName())) {
                 return;
             }
             ChestView<ItemStack, Player> view = holder.getView();
@@ -253,20 +307,25 @@ public class BukkitView {
             ) {
                 e.setCancelled(true);
             }
-            runSync(() -> holder.updateViewContentsWithPlayer(p));
+            runForView(p, holder, holder.getRevision(), false, () -> holder.updateViewContentsWithPlayer(p));
         }
 
         @EventHandler
         public void onClose(InventoryCloseEvent e) {
             Inventory topInv = e.getView().getTopInventory();
             ViewHolder holder = topInv.getHolder() instanceof ViewHolder ? ((ViewHolder) topInv.getHolder()) : null;
-            if (holder == null || !holder.getPlugin().getName().equals(plugin.getName())) {
+            if (holder == null || holder.isClosed() || !holder.getPlugin().getName().equals(plugin.getName())) {
                 return;
             }
             Player p = (Player) e.getPlayer();
+            holder.updateViewContents();
             ChestView<ItemStack, Player> view = holder.getView();
             if (view == null) {
                 return;
+            }
+            holder.markClosed();
+            for (Integer slot : view.getContents().getItems().keySet()) {
+                topInv.setItem(slot, null);
             }
             boolean giveBackInputItems = holder.isGiveBackItems();
             ViewAction<ItemStack, Player> action = ViewAction.nothing();
@@ -278,70 +337,99 @@ public class BukkitView {
             if (action instanceof ViewAction.Close<ItemStack, Player> close) {
                 giveBackInputItems = close.isGiveBackItems();
             } else {
-                handleAction(p, holder, action);
+                handleAction(p, holder, action, true);
             }
 
             // modal
-            if (!holder.isDirty() && view.getParent() != null) {
-                runSync(() -> {
-                    if (p.isOnline()) {
-                        openView(view.getParent(), p, plugin);
-                    }
-                });
+            if (!holder.isDirty() && view.getParent() != null && !(action instanceof ViewAction.OpenAsync<?, ?>)) {
+                runForView(p, holder, holder.getRevision(), true, () -> openView(view.getParent(), p, plugin));
             }
 
             // give back the items
-            if (giveBackInputItems) {
-                runSync(() -> {
-                    if (p.isOnline()) {
-                        giveBackContents(view, p);
-                    }
-                });
+            if (giveBackInputItems && !holder.isTransferringItems()) {
+                giveBackItems(view.getContents().getItems().values(), p);
             }
         }
 
         @SuppressWarnings("unchecked")
         private void handleAction(Player p, ViewHolder holder, ViewAction<ItemStack, Player> action) {
+            handleAction(p, holder, action, false);
+        }
+
+        private void handleAction(Player p, ViewHolder holder, ViewAction<ItemStack, Player> action, boolean closing) {
             ChestView<ItemStack, Player> currentView = holder.getView();
-            if (currentView == null) {
+            long revision = holder.getRevision();
+            if (currentView == null || (!closing && !canApplyAction(p, holder, revision, false))) {
                 return;
             }
-            if (action instanceof ViewAction.Open<?, ?> && !holder.isDirty()) {
-                ViewAction.Open<ItemStack, Player> open = (ViewAction.Open<ItemStack, Player>) action;
-                holder.setDirty(true);
-                runSync(() -> openView(open.getView(), p, plugin));
-            } else if (action instanceof ViewAction.Open<ItemStack, Player>) {
-                runSync(() -> openView(currentView, p, plugin));
+            if (action instanceof ViewAction.Open<ItemStack, Player> open) {
+                if (!holder.isDirty()) {
+                    holder.setDirty(true);
+                    runForView(p, holder, revision, closing, () -> openView(open.getView(), p, plugin));
+                }
+            } else if (action instanceof ViewAction.Reopen<ItemStack, Player>) {
+                if (!holder.isDirty()) {
+                    holder.setDirty(true);
+                    runForView(p, holder, revision, closing, () -> {
+                        holder.setTransferringItems(!closing);
+                        try {
+                            holder.updateViewContents();
+                            openView(holder.getView(), p, plugin);
+                        } finally {
+                            holder.setTransferringItems(false);
+                        }
+                    });
+                }
             } else if (action instanceof ViewAction.Close<ItemStack, Player>) {
                 holder.setGiveBackItems(((ViewAction.Close<ItemStack, Player>) action).isGiveBackItems());
-                runSync(p::closeInventory);
+                runForView(p, holder, revision, closing, p::closeInventory);
             } else if (action instanceof ViewAction.OpenAsync<ItemStack, Player> openAsync) {
                 runAsync(() -> {
                     try {
                         ChestView<ItemStack, Player> chestView = openAsync.getFuture().get(30, TimeUnit.SECONDS);
-                        runSync(() -> handleAction(p, holder, new ViewAction.Open<>(chestView)));
+                        runForView(p, holder, revision, closing,
+                                () -> handleAction(p, holder, new ViewAction.Open<>(chestView), closing));
                     } catch (Exception ex) {
                         handleException(plugin.getLogger(), ex);
                     }
                 });
             } else if (action instanceof ViewAction.Update<ItemStack, Player> update) {
                 ChestView<ItemStack, Player> newView = currentView.withContents(update.getContents());
-                updateInventory(update.getContents(), holder.getInventory(), new OpenEvent<ItemStack, Player>(p, newView));
-                holder.setView(newView);
+                applyUpdate(newView, p, holder);
             } else if (action instanceof ViewAction.UpdateAsync<ItemStack, Player> updateAsync) {
                 runAsync(() -> {
                     try {
                         ViewContents<ItemStack, Player> contents = updateAsync.getContentsFuture().get(30, TimeUnit.SECONDS);
-                        runSync(() -> {
-                            ChestView<ItemStack, Player> newView = currentView.withContents(contents);
-                            updateInventory(contents, holder.getInventory(), new OpenEvent<>(p, newView));
-                            holder.setView(newView);
+                        runForView(p, holder, revision, closing, () -> {
+                            ChestView<ItemStack, Player> newView = holder.getView().withContents(contents);
+                            applyUpdate(newView, p, holder);
                         });
                     } catch (Exception ex) {
                         handleException(plugin.getLogger(), ex);
                     }
                 });
             }
+        }
+
+        private boolean canApplyAction(Player player, ViewHolder holder, long revision, boolean closing) {
+            if (!player.isOnline() || holder.getRevision() != revision) {
+                return false;
+            }
+            Inventory current = player.getOpenInventory().getTopInventory();
+            if (closing) {
+                InventoryType type = player.getOpenInventory().getType();
+                return holder.isClosed() && (current == null || type == InventoryType.CRAFTING
+                        || type == InventoryType.CREATIVE);
+            }
+            return !holder.isClosed() && current == holder.getInventory();
+        }
+
+        private void runForView(Player player, ViewHolder holder, long revision, boolean closing, Runnable runnable) {
+            runSync(() -> {
+                if (canApplyAction(player, holder, revision, closing)) {
+                    runnable.run();
+                }
+            });
         }
 
         private static void handleException(Logger logger, Throwable throwable) {
@@ -364,16 +452,6 @@ public class BukkitView {
                 } else {
                     view.getContents().getItems().remove(i);
                 }
-            }
-        }
-
-        private static void giveBackContents(ChestView<ItemStack, Player> view, Player p) {
-            ItemStack[] items = view.getContents().getItems().values().stream()
-                    .filter(item -> item != null && item.getType() != Material.AIR)
-                    .toArray(ItemStack[]::new);
-            HashMap<Integer, ItemStack> failures = p.getInventory().addItem(items);
-            for (ItemStack item : failures.values()) {
-                p.getWorld().dropItem(p.getEyeLocation(), item);
             }
         }
 

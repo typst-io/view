@@ -55,6 +55,9 @@ public class PageViewLayout<I, P> {
     public ChestView<I, P> toView(int page) {
         Map<Integer, ViewControl<I, P>> viewControls = new HashMap<>();
         int contentSize = getSlots().size();
+        if (contentSize == 0) {
+            throw new IllegalArgumentException("A page layout must contain at least one content slot");
+        }
         int count = getElements().size();
         int maxPage = Math.max(1, count / contentSize + Math.min(count % contentSize, 1));
         int coercedPage = Math.max(Math.min(page, maxPage), 1);
